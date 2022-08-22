@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body { 
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    form {
+      width: 396px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #results {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 192px 192px;
+      grid-template-rows: 192px 1fr;
+      gap: 12px;
+    }
+
+    .swatch {
+      width: 192px;
+      height: 192px;
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <form id="color-form">
+    <label for="hex-color-value">
+      Your 3 or 6 letter hex color:
+    </label>
+    <input type="text" id="hex-color-value">
+    <button type="submit">FIND CLOSEST COLOR</button>
+  </form>
+  <div id="results">
+    <div id="original" class="swatch"></div>
+    <div id="closest" class="swatch"></div>
+    <div id="original-data"></div>
+    <div id="closest-data"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('color-form');
+    const hexColorValueEl = document.getElementById('hex-color-value');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      fetch('/closest-color', {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hexColor: hexColorValueEl.value })
+      })
+      .then(response => response.json())
+      .then((color) => {
+        const originalEl = document.getElementById('original');
+        const closestEl = document.getElementById('closest');
+        const originalDataEl = document.getElementById('original-data');
+        const closestDataEl = document.getElementById('closest-data');
+        
+        const hexColorValue = hexColorValueEl.value[0] == '#' ? hexColorValueEl.value : `#${ hexColorValueEl.value }`;
+
+        originalEl.style.background = hexColorValue;
+        closestEl.style.background = color.hex;
+
+        originalDataEl.innerHTML = `<h3>Your Input</h3><p>${ hexColorValue.toUpperCase() }</p>`;
+        closestDataEl.innerHTML = `<h3>Closest Named Color</h3><p>${ color.name.toLowerCase() } (${ color.hex.toUpperCase() })</p>`;
+      });
+    })
+  </script>
+</body>
+</html>
